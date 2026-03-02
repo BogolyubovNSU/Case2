@@ -109,6 +109,57 @@ with open('data_leak_sample.txt', 'r', encoding='utf-8') as f:
     main_text = f.read()
     print('СИСТЕМНАЯ ИНФОРМАЦИЯ: ',find_system_info(main_text))
 
+
+# ========== Role 4: 🧩 Cryptanalyst ==========
+
+def decode_messages(text):
+    results = {
+        'base64': [],
+        'hex': [],
+        'rot13': []
+    }
+
+    text = text.split('\n')
+
+    for message in text:
+        decoding_in_rot13 = []
+
+        for word in message.split():
+            if re.fullmatch(r'[A-Za-z]+', word):
+                decoding_in_rot13.append(codecs.decode(word, 'rot13'))
+            else:
+                decoding_in_rot13.append(word)
+
+        if message.split() != decoding_in_rot13:
+            results['rot13'].append(
+                f'Encoded: {message}; '
+                f'Decoded: {' '.join(decoding_in_rot13)}')
+
+        if (len(message)
+                and not len(message) % 4
+                and re.fullmatch(r'[A-Za-z0-9+/]+={0,2}', message)):
+            try:
+                decoded = base64.b64decode(message).decode('utf-8')
+                results['base64'].append(
+                    f'Encoded: {message}; '
+                    f'Decoded: {decoded}')
+            except UnicodeDecodeError:
+                pass
+
+        if (not len(message) % 2
+                and re.fullmatch(r'0x[0-9A-Fa-f]+', message)):
+                decoded = codecs.decode(message[2:], 'hex').decode('utf-8')
+                results['hex'].append(
+                    f'Encoded: {message}; '
+                    f'Decoded: {decoded}')
+
+    return results
+
+with open('data_leak_sample.txt', 'r', encoding='utf-8') as f:
+    main_text = f.read()
+    print('РАСШИФРОВАННЫЕ СООБЩЕНИЯ: ',decode_messages(main_text))
+
+
 '''
 def generate_comprehensive_report(main_text, log_text, messy_data):
     """ Генерирует полный отчет о расследовании """
