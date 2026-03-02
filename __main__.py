@@ -66,36 +66,48 @@ def find_secrets(text):
         r'pk_test_[a-zA-Z0-9]{24,}',
         r'rk_live_[a-zA-Z0-9]{24,}'
     ]
+
     for pattern in api_patterns:
         secrets.extend(re.findall(pattern, text))
+
     for secret in secrets:
         if secret not in result:
             result.append(secret)
-    patterns_password = {
-        r'\b([A-Za-z0-9!@#$%^&*_]{8,}[!#$%^&*])\b',
-        r'\b([A-Z][a-z]+\d+[A-Z][a-z]+[!@#$%^&*]?)\b',
-        r'\b(\d+[!@#$%^&*]+[a-zA-Z]+)\b',
-        r'\b([A-Za-z]{3,}\d{2,}[!@#$%^&*]+)\b',
-        r'\b([a-z]+_[A-Z][a-z]+_\d+[!@#$%^&*]?)\b',
-        r'\b([A-Z][a-z]{2,}\d{4}[!@#$%^&*])\b',
-        r'\b(\d+[a-zA-Z]+[!@#$%^&*]+)\b',
-        r'\b([a-zA-Z]+\d+[!@#$%^&*]+)\b',
-        r'\b([A-Za-z]+(?:_[A-Za-z]+)+_?\d+[!@#$%^&*]?)\b',
-        r'\b([A-Za-z]+[@$][A-Za-z0-9]+\d+)\b',
-        r'\b([A-Za-z]+[!@#$%^&*]+\d+)\b',
-        r'\b[A-Z][a-z]+d{2,}[!@#$%^&*]+'
-        r'^[A-Z][a-z]+[0-9]{4}!$'
-    }
-    for pattern in patterns_password:
-        secrets.extend(re.findall(pattern, text))
-    for secret in secrets:
-        if secret not in result:
-            result.append(secret)
-    return result
+
+    for word in text.split():
+        if (not re.fullmatch(r'\d+', word)
+            and not re.fullmatch(r'[A-Za-z]+', word)
+            and not re.fullmatch(r'[!@#$%^&*]', word)
+            and re.fullmatch(r'[A-Za-z0-9!@#$%^&*]+', word)):
+            result.append(word)
+    return list(set(result))
 
 with open('data_leak_sample.txt', 'r', encoding='utf-8') as f:
     main_text = f.read()
     print('СЕКРЕТЫ: ',find_secrets(main_text))
+
+
+# ========== Role 3: 💻 System Information Tracker ==========
+
+def find_system_info(text):
+    results = {
+        'ips': [],
+        'files': [],
+        'emails': []
+    }
+
+    ip_pattern = r'\b(?:\d{1,3}\.){3}\d{1,3}\b'
+    results['ips'] = list(set(re.findall(ip_pattern, text)))
+    email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+    results['emails'] = list(set(re.findall(email_pattern, text)))
+    file_pattern = r'(?:[a-zA-Z]:\\|/)(?:[\w\s\d.-_]+\\)*[\w\s\d.-_]+\.[a-zA-Z0-9]+'
+    results['files'] = list(set(re.findall(file_pattern, text)))
+
+    return results
+
+with open('data_leak_sample.txt', 'r', encoding='utf-8') as f:
+    main_text = f.read()
+    print('СИСТЕМНАЯ ИНФОРМАЦИЯ: ',find_system_info(main_text))
 
 '''
 def generate_comprehensive_report(main_text, log_text, messy_data):
