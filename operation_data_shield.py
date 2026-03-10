@@ -136,7 +136,7 @@ def decode_messages(text: str) -> dict[str, set[str]]:
         if message.split() != decoding_in_rot13:
             results['rot13'].add(
                 f'Encoded: {message}; '
-                f'Decoded: {' '.join(decoding_in_rot13)}')
+                f'Decoded: {" ".join(decoding_in_rot13)}')
 
         # BASE64 DECODING
         if (len(message)
@@ -200,3 +200,27 @@ if __name__ == "__main__":
         main_text = f.read()
         report = generate_comprehensive_report(main_text)
         print_report(report)
+        with open('result4.txt', 'w', encoding='utf-8') as file:
+            for artefact in report['financial_data']:
+                file.write(artefact+'\n')
+
+            for artefact in report['secrets']:
+                file.write(artefact+'\n')
+
+            for artefact in report['system_info']['IPv4']:
+                file.write(artefact+'\n')
+
+            for artefact in report['system_info']['files']:
+                file.write(artefact+'\n')
+
+            for artefact in report['system_info']['emails']:
+                file.write(artefact+'\n')
+
+            for artefact in report['encoded_messages']['base64']:
+                file.write(artefact+'\n')
+
+            for artefact in report['encoded_messages']['hex']:
+                file.write(artefact+'\n')
+
+            for artefact in report['encoded_messages']['rot13']:
+                file.write(artefact+'\n')
